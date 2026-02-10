@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 from sklearn.metrics import (
     accuracy_score,
@@ -30,8 +32,8 @@ st.markdown(
     This application demonstrates **multiple machine learning classification models**
     trained on the **Adult Census Income dataset**.
     
-    You may either **upload your own raw CSV** or **download a sample dataset**
-    to test the application.
+    You can **upload a raw CSV file** or **download a sample dataset**
+    to evaluate model performance.
     """
 )
 
@@ -54,21 +56,23 @@ model_name = st.sidebar.selectbox(
     ]
 )
 
-# 🔽 SAMPLE DATA DOWNLOAD (2000 ROWS)
-st.sidebar.subheader("📥 Sample Data")
+# --------------------------------------------------
+# Sample Data Download
+# --------------------------------------------------
+st.sidebar.subheader("📥 Sample Data (Raw)")
 
 try:
     raw_df = pd.read_csv("data/adult.csv")
     sample_df = raw_df.sample(n=2000, random_state=42)
 
     st.sidebar.download_button(
-        label="⬇️ Download Sample Raw Data (2000 rows)",
+        label="⬇️ Download Sample Data (2000 rows)",
         data=sample_df.to_csv(index=False),
         file_name="adult_sample_2000.csv",
         mime="text/csv"
     )
-except:
-    st.sidebar.warning("Sample data not found.")
+except Exception:
+    st.sidebar.warning("Sample data not found in data/adult.csv")
 
 st.sidebar.divider()
 
@@ -78,7 +82,7 @@ uploaded_file = st.sidebar.file_uploader(
 )
 
 st.sidebar.info(
-    "📌 CSV must contain the same feature columns\n"
+    "📌 CSV must contain all feature columns\n"
     "and the **income** target column."
 )
 
@@ -97,7 +101,7 @@ else:
     if "income" not in data.columns:
         st.error("❌ Uploaded CSV must contain the 'income' column.")
     else:
-        # Load model pipeline
+        # Load trained pipeline model
         model_path = f"models/{model_name.lower().replace(' ', '_')}.pkl"
         model = joblib.load(model_path)
 
@@ -138,16 +142,12 @@ else:
         st.metric("Matthews Correlation Coefficient (MCC)", f"{mcc:.3f}")
 
         # --------------------------------------------------
-        # CLEAN CLASSIFICATION REPORT (UX IMPROVED)
+        # Classification Summary (UX Improved)
         # --------------------------------------------------
         st.divider()
         st.subheader("📈 Classification Summary")
 
-        report = classification_report(
-            y_test,
-            y_pred,
-            output_dict=True
-        )
+        report = classification_report(y_test, y_pred, output_dict=True)
 
         col_a, col_b = st.columns(2)
 
@@ -164,26 +164,33 @@ else:
             st.metric("F1-score", f"{report['1']['f1-score']:.3f}")
 
         with st.expander("📋 Full Classification Report (Table View)"):
-            report_df = (
-                pd.DataFrame(report)
-                .transpose()
-                .round(3)
-            )
+            report_df = pd.DataFrame(report).transpose().round(3)
             st.dataframe(report_df, use_container_width=True)
 
         # --------------------------------------------------
-        # Confusion Matrix
+        # Confusion Matrix (STANDARD HEATMAP)
         # --------------------------------------------------
         st.divider()
         st.subheader("🔢 Confusion Matrix")
 
         cm = confusion_matrix(y_test, y_pred)
-        cm_df = pd.DataFrame(
+
+        fig, ax = plt.subplots(figsize=(6, 4))
+        sns.heatmap(
             cm,
-            columns=["Predicted ≤50K", "Predicted >50K"],
-            index=["Actual ≤50K", "Actual >50K"]
+            annot=True,
+            fmt="d",
+            cmap="Blues",
+            xticklabels=["≤50K", ">50K"],
+            yticklabels=["≤50K", ">50K"],
+            cbar=True,
+            ax=ax
         )
 
-        st.dataframe(cm_df, use_container_width=True, height=150)
+        ax.set_xlabel("Predicted Label")
+        ax.set_ylabel("True Label")
+        ax.set_title(f"Confusion Matrix – {model_name}")
+
+        st.pyplot(fig)
 
         st.success("✅ Evaluation completed successfully!")
