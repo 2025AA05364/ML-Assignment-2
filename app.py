@@ -30,8 +30,8 @@ st.markdown(
     This application demonstrates **multiple machine learning classification models**
     trained on the **Adult Census Income dataset**.
     
-    Upload a **test CSV file**, select a model, and view **clear evaluation metrics**
-    and results.
+    You may either **upload your own raw CSV** or **download a sample dataset**
+    to test the application.
     """
 )
 
@@ -54,6 +54,24 @@ model_name = st.sidebar.selectbox(
     ]
 )
 
+# 🔽 SAMPLE DATA DOWNLOAD (2000 ROWS)
+st.sidebar.subheader("📥 Sample Data")
+
+try:
+    raw_df = pd.read_csv("data/adult.csv")
+    sample_df = raw_df.sample(n=2000, random_state=42)
+
+    st.sidebar.download_button(
+        label="⬇️ Download Sample Raw Data (2000 rows)",
+        data=sample_df.to_csv(index=False),
+        file_name="adult_sample_2000.csv",
+        mime="text/csv"
+    )
+except:
+    st.sidebar.warning("Sample data not found.")
+
+st.sidebar.divider()
+
 uploaded_file = st.sidebar.file_uploader(
     "Upload Test CSV File",
     type=["csv"]
@@ -68,38 +86,28 @@ st.sidebar.info(
 # Main Logic
 # --------------------------------------------------
 if uploaded_file is None:
-    st.warning("⬅️ Please upload a test CSV file to continue.")
+    st.warning("⬅️ Upload a CSV file or download sample data to continue.")
 else:
-    # Read CSV
     data = pd.read_csv(uploaded_file)
 
-    # --------------------------------------------------
     # Dataset Preview
-    # --------------------------------------------------
     st.subheader("📄 Uploaded Dataset Preview")
-    st.dataframe(
-        data.head(),
-        use_container_width=True,
-        height=220
-    )
+    st.dataframe(data.head(), use_container_width=True, height=220)
 
     if "income" not in data.columns:
         st.error("❌ Uploaded CSV must contain the 'income' column.")
     else:
-        # Load selected model
+        # Load model pipeline
         model_path = f"models/{model_name.lower().replace(' ', '_')}.pkl"
         model = joblib.load(model_path)
 
-        # Prepare test data
+        # Prepare data
         X_test = data.drop("income", axis=1)
         y_test = data["income"].map({"<=50K": 0, ">50K": 1})
 
         # Predictions
         y_pred = model.predict(X_test)
-        y_prob = (
-            model.predict_proba(X_test)[:, 1]
-            if hasattr(model, "predict_proba") else y_pred
-        )
+        y_prob = model.predict_proba(X_test)[:, 1]
 
         # --------------------------------------------------
         # Metrics Calculation
@@ -112,7 +120,7 @@ else:
         mcc = matthews_corrcoef(y_test, y_pred)
 
         # --------------------------------------------------
-        # Metrics Display (CARDS)
+        # Metrics Display
         # --------------------------------------------------
         st.divider()
         st.subheader("📊 Model Performance Metrics")
@@ -123,7 +131,6 @@ else:
         c1.metric("Model", model_name)
         c2.metric("Accuracy", f"{acc:.3f}")
         c3.metric("AUC", f"{auc:.3f}")
-
         c4.metric("Precision", f"{prec:.3f}")
         c5.metric("Recall", f"{rec:.3f}")
         c6.metric("F1 Score", f"{f1:.3f}")
@@ -131,28 +138,38 @@ else:
         st.metric("Matthews Correlation Coefficient (MCC)", f"{mcc:.3f}")
 
         # --------------------------------------------------
-        # Classification Report
+        # CLEAN CLASSIFICATION REPORT (UX IMPROVED)
         # --------------------------------------------------
         st.divider()
-        st.subheader("📈 Classification Report")
+        st.subheader("📈 Classification Summary")
 
-        report_df = (
-            pd.DataFrame(
-                classification_report(
-                    y_test,
-                    y_pred,
-                    output_dict=True
-                )
+        report = classification_report(
+            y_test,
+            y_pred,
+            output_dict=True
+        )
+
+        col_a, col_b = st.columns(2)
+
+        with col_a:
+            st.markdown("### ≤50K Class")
+            st.metric("Precision", f"{report['0']['precision']:.3f}")
+            st.metric("Recall", f"{report['0']['recall']:.3f}")
+            st.metric("F1-score", f"{report['0']['f1-score']:.3f}")
+
+        with col_b:
+            st.markdown("### >50K Class")
+            st.metric("Precision", f"{report['1']['precision']:.3f}")
+            st.metric("Recall", f"{report['1']['recall']:.3f}")
+            st.metric("F1-score", f"{report['1']['f1-score']:.3f}")
+
+        with st.expander("📋 Full Classification Report (Table View)"):
+            report_df = (
+                pd.DataFrame(report)
+                .transpose()
+                .round(3)
             )
-            .transpose()
-            .round(3)
-        )
-
-        st.dataframe(
-            report_df,
-            use_container_width=True,
-            height=320
-        )
+            st.dataframe(report_df, use_container_width=True)
 
         # --------------------------------------------------
         # Confusion Matrix
@@ -161,17 +178,12 @@ else:
         st.subheader("🔢 Confusion Matrix")
 
         cm = confusion_matrix(y_test, y_pred)
-
         cm_df = pd.DataFrame(
             cm,
             columns=["Predicted ≤50K", "Predicted >50K"],
             index=["Actual ≤50K", "Actual >50K"]
         )
 
-        st.dataframe(
-            cm_df,
-            use_container_width=True,
-            height=150
-        )
+        st.dataframe(cm_df, use_container_width=True, height=150)
 
         st.success("✅ Evaluation completed successfully!")
