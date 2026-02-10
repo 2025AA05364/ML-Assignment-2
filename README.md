@@ -1,97 +1,109 @@
-**1. Problem Statement**
+# ML Assignment 3: Adult Census Income Prediction
 
-The objective of this assignment is to implement multiple machine learning classification models on a real-world dataset, evaluate their performance using standard evaluation metrics, and deploy the trained models through an interactive Streamlit web application. The assignment demonstrates an end-to-end machine learning workflow including data preprocessing, model training, evaluation, and deployment.
+## 1. Problem Statement
 
-**2. Dataset Description**
+The objective of this project is to implement multiple machine learning classification models to predict whether a person makes over $50K a year based on census data. We evaluate the models' performance using standard evaluation metrics and deploy the trained models through an interactive Streamlit web application. This project demonstrates an end-to-end machine learning workflow including data preprocessing, model training, evaluation, and deployment.
 
-The Wine Quality (Red) dataset was used for this assignment. The dataset is publicly available from the UCI Machine Learning Repository and is also hosted on Kaggle for convenience.
+## 2. Dataset Description
 
-The dataset contains physicochemical properties of Portuguese “Vinho Verde” red wine samples. Due to privacy and logistical reasons, only physicochemical input variables and sensory output variables are provided.
+The Adult Census Income dataset is used for this assignment. This data was extracted from the 1994 Census bureau database by Ronny Kohavi and Barry Becker (Data Mining and Visualization, Silicon Graphics). The dataset is available on Kaggle: [Adult Census Income Dataset](https://www.kaggle.com/datasets/uciml/adult-census-income).
 
-**Number of instances**: 1,599
+Dataset characteristics:
+- Extraction was done by Barry Becker from the 1994 Census database.
+- A set of reasonably clean records was extracted using the following conditions: ((AAGE>16) && (AGI>100) && (AFNLWGT>1) && (HRSWK>0)).
+- Prediction task is to determine whether a person makes over 50K a year.
+- Number of instances: 48,842
+- Number of attributes: 14 (mixed categorical and numerical)
 
-**Number of features:** 11 input features
+Attribute Information:
+1. age: continuous
+2. workclass: Private, Self-emp-not-inc, Self-emp-inc, Federal-gov, Local-gov, State-gov, Without-pay, Never-worked
+3. fnlwgt: continuous (final weight)
+4. education: Bachelors, Some-college, 11th, HS-grad, Prof-school, Assoc-acdm, Assoc-voc, 9th, 7th-8th, 12th, Masters, 1st-4th, 10th, Doctorate, 5th-6th, Preschool
+5. education-num: continuous
+6. marital-status: Married-civ-spouse, Divorced, Never-married, Separated, Widowed, Married-spouse-absent, Married-AF-spouse
+7. occupation: Tech-support, Craft-repair, Other-service, Sales, Exec-managerial, Prof-specialty, Handlers-cleaners, Machine-op-inspct, Adm-clerical, Farming-fishing, Transport-moving, Priv-house-serv, Protective-serv, Armed-Forces
+8. relationship: Wife, Own-child, Husband, Not-in-family, Other-relative, Unmarried
+9. race: White, Asian-Pac-Islander, Amer-Indian-Eskimo, Other, Black
+10. sex: Female, Male
+11. capital-gain: continuous
+12. capital-loss: continuous
+13. hours-per-week: continuous
+14. native-country: United-States, Cambodia, England, Puerto-Rico, Canada, Germany, Outlying-US(Guam-USVI-etc), India, Japan, Greece, South, China, Cuba, Iran, Honduras, Philippines, Italy, Poland, Jamaica, Vietnam, Mexico, Portugal, Ireland, France, Dominican-Republic, Laos, Ecuador, Taiwan, Haiti, Columbia, Hungary, Guatemala, Nicaragua, Scotland, Thailand, Yugoslavia, El-Salvador, Trinadad&Tobago, Peru, Hong, Holand-Netherlands
 
-**Target variable**: Wine quality score (originally ranging from 0 to 10)
+Target Variable:
+- income: >50K, <=50K
 
-Input Features:
-    Fixed acidity
-    Volatile acidity
-    Citric acid
-    Residual sugar
-    Chlorides
-    Free sulfur dioxide
-    Total sulfur dioxide
-    Density
-    pH
-    Sulphates
-    Alcohol
-    Target Variable Transformation
-For this assignment, the problem was formulated as a binary classification task, following the recommendation in the dataset documentation:
+## 3. Models Used and Evaluation Metrics
 
-Wines with quality ≥ 6 were labeled as Good (1)
-Wines with quality < 6 were labeled as Bad (0)
+The following six classification models were implemented:
 
-This transformation enables effective use of classification metrics such as AUC and MCC.
+1. Logistic Regression
+2. Decision Tree Classifier
+3. K-Nearest Neighbors (KNN)
+4. Naive Bayes Classifier
+5. Random Forest (Ensemble Model)
+6. XGBoost (Ensemble Model)
 
-**3. Models Used and Evaluation Metrics**
-The following six classification models were implemented using the same dataset and train–test split:
+Each model was evaluated using the following metrics:
+- Accuracy
+- AUC Score
+- Precision
+- Recall
+- F1 Score
+- Matthews Correlation Coefficient (MCC)
 
-Logistic Regression
-Decision Tree Classifier
-K-Nearest Neighbors (KNN)
-Naive Bayes Classifier
-Random Forest (Ensemble Model)
-XGBoost (Ensemble Model)
+### Model Comparison Table
 
-Each model was evaluated using the following mandatory metrics:
+| Model                | Accuracy | AUC     | Precision | Recall  | F1 Score | MCC     |
+|----------------------|----------|---------|-----------|---------|----------|---------|
+| Logistic Regression  | 0.830598 | 0.864159| 0.755319  | 0.472703| 0.581491 | 0.503076|
+| Decision Tree        | 0.810874 | 0.746798| 0.620414  | 0.619174| 0.619793 | 0.493925|
+| KNN                  | 0.834411 | 0.862154| 0.686989  | 0.615180| 0.649104 | 0.542585|
+| Naive Bayes          | 0.797779 | 0.861328| 0.685039  | 0.347537| 0.461131 | 0.383437|
+| Random Forest        | 0.864412 | 0.913774| 0.774038  | 0.643142| 0.702545 | 0.620138|
+| XGBoost              | 0.874192 | 0.931772| 0.790008  | 0.673768| 0.727273 | 0.649636|
 
-Accuracy
-AUC Score
-Precision
-Recall
-F1 Score
-Matthews Correlation Coefficient (MCC)
+### Observations on Model Performance
 
-**Model Comparison Table**
+| ML Model            | Observation                                                                                                    |
+|---------------------|----------------------------------------------------------------------------------------------------------------|
+| Logistic Regression | Performs well with high accuracy and AUC, but lower recall compared to ensemble methods.                       |
+| Decision Tree       | Shows balanced precision and recall, but overall performance is lower than other models.                       |
+| KNN                 | Similar performance to Logistic Regression, with good accuracy and AUC but lower recall.                       |
+| Naive Bayes         | Lowest overall performance, particularly struggling with recall and F1 score.                                  |
+| Random Forest       | Strong performance across all metrics, second only to XGBoost.                                                 |
+| XGBoost             | Best overall performance with highest accuracy, AUC, and MCC scores.                                           |
 
-	Model	            Accuracy	AUC     	Precision	Recall	    F1 Score	MCC
-0	Logistic Regression	0.740625	0.824208	0.768293	0.736842	0.752239	0.480819
-1	Decision Tree	    0.756250	0.754661	0.768786	0.777778	0.773256	0.509802
-2	KNN	                0.734375	0.805251	0.752941	0.748538	0.750733	0.466467
-3	Naive Bayes	        0.721875	0.788375	0.773333	0.678363	0.722741	0.449989
-4	Random Forest	    0.806250	0.902665	0.830303	0.801170	0.815476	0.612098
-5	XGBoost	            0.825000	0.896346	0.848485	0.818713	0.833333	0.649705
+These results demonstrate the superiority of ensemble methods (XGBoost and Random Forest) for this particular dataset and classification task.
 
-**4. Observations on Model Performance**
-ML Model	Observation
-Logistic Regression	Performs reasonably well after feature scaling and provides a strong baseline model.
-Decision Tree	Captures non-linear relationships but shows tendency to overfit the training data.
-KNN	Performance depends on distance calculation and benefits significantly from feature scaling.
-Naive Bayes	Fast and efficient but assumes feature independence, which may limit performance.
-Random Forest	Provides better generalization and robustness by combining multiple decision trees.
-XGBoost	Achieves the best overall performance due to gradient boosting and effective handling of feature interactions.
-
-**5. Streamlit Web Application**
+## 4. Streamlit Web Application
 
 An interactive Streamlit web application was developed and deployed using Streamlit Community Cloud. The application includes:
-CSV file upload option for test data
-Model selection dropdown
-Display of evaluation metrics
-Confusion matrix / classification report for predictions
+- CSV file upload option for test data
+- Model selection dropdown
+- Display of evaluation metrics
+- Confusion matrix / classification report for predictions
 
-**6. Tools and Technologies Used**
+### Streamlit App Link
+[Adult Census Income Prediction App](https://ml-assignment-2-2025aa05364.streamlit.app/)
 
-Python
-Pandas, NumPy
-Scikit-learn
-XGBoost
-Streamlit
-GitHub
-BITS Virtual Lab
+## 5. Tools and Technologies Used
 
-**7. Reference**
+- Python
+- Pandas, NumPy
+- Scikit-learn
+- XGBoost
+- Streamlit
+- GitHub
+- BITS Virtual Lab
 
-P. Cortez, A. Cerdeira, F. Almeida, T. Matos, and J. Reis,
-Modeling wine preferences by data mining from physicochemical properties,
-Decision Support Systems, Elsevier, 47(4):547–553, 2009.
+## 6. GitHub Repository
+
+[Adult Census Income Prediction Project Repository](https://github.com/2025AA05364/ML-Assignment-3.git)
+
+## 7. References
+
+1. Dua, D. and Graff, C. (2019). UCI Machine Learning Repository [http://archive.ics.uci.edu/ml]. Irvine, CA: University of California, School of Information and Computer Science.
+
+2. Adult Census Income dataset on Kaggle: https://www.kaggle.com/datasets/uciml/adult-census-income
