@@ -15,7 +15,7 @@ from sklearn.metrics import (
 )
 
 # --------------------------------------------------
-# Page Config
+# Page Configuration
 # --------------------------------------------------
 st.set_page_config(
     page_title="Adult Income Classification",
@@ -24,20 +24,20 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# Elegant Blue Professional Theme
+# Advanced Modern Styling
 # --------------------------------------------------
 st.markdown("""
 <style>
 
-/* App Background */
+/* Main background */
 .stApp {
-    background-color: #f2f5fa;
+    background-color: #f4f7fc;
 }
 
-/* Sidebar - Soft Blue Gradient */
+/* Sidebar styling */
 section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #2b5876, #4e4376);
-    padding-top: 30px;
+    background: linear-gradient(180deg, #1f3c88, #2a5298);
+    padding-top: 20px;
 }
 
 section[data-testid="stSidebar"] * {
@@ -46,37 +46,29 @@ section[data-testid="stSidebar"] * {
 
 /* Header */
 .header-box {
-    background: linear-gradient(135deg, #396afc, #2948ff);
-    padding: 35px;
-    border-radius: 20px;
+    background: linear-gradient(135deg, #1f3c88, #3a7bd5);
+    padding: 30px;
+    border-radius: 18px;
     color: white;
+    margin-bottom: 20px;
+}
+
+/* Student box */
+.student-box {
+    background-color: white;
+    padding: 15px 20px;
+    border-radius: 14px;
+    box-shadow: 0px 6px 18px rgba(0,0,0,0.08);
     margin-bottom: 25px;
 }
 
-/* Student Info Card */
-.student-box {
-    background: white;
-    padding: 18px 25px;
-    border-radius: 15px;
-    box-shadow: 0px 6px 18px rgba(0,0,0,0.08);
-    margin-bottom: 30px;
-}
-
-/* Content Cards */
+/* Content cards */
 .section-box {
-    background: white;
-    padding: 30px;
-    border-radius: 20px;
+    background-color: white;
+    padding: 25px;
+    border-radius: 18px;
     box-shadow: 0px 6px 18px rgba(0,0,0,0.06);
-    margin-bottom: 30px;
-}
-
-/* Metric Styling */
-[data-testid="metric-container"] {
-    background-color: #f7f9fc;
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0px 3px 8px rgba(0,0,0,0.05);
+    margin-bottom: 25px;
 }
 
 </style>
@@ -99,9 +91,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# Sidebar
+# Sidebar Controls
 # --------------------------------------------------
-st.sidebar.markdown("## 🔎 Select Model")
+st.sidebar.markdown("## ⚙️ Model Selection")
 
 model_options = {
     "Logistic Regression": "logistic_regression",
@@ -127,10 +119,10 @@ try:
     sample_df = raw_df.sample(n=2000, random_state=42)
 
     st.sidebar.download_button(
-        "Download Sample (2000 rows)",
-        sample_df.to_csv(index=False),
-        "adult_sample_2000.csv",
-        "text/csv"
+        label="Download Sample (2000 rows)",
+        data=sample_df.to_csv(index=False),
+        file_name="adult_sample_2000.csv",
+        mime="text/csv"
     )
 except:
     st.sidebar.warning("Sample dataset not found.")
@@ -165,7 +157,7 @@ else:
         y_prob = model.predict_proba(X_test)[:, 1]
 
         # --------------------------------------------------
-        # Performance Overview
+        # Performance Overview (INLINE MODEL NAME)
         # --------------------------------------------------
         st.markdown('<div class="section-box">', unsafe_allow_html=True)
         st.subheader(f"📊 Performance Overview : {selected_model_display}")
@@ -177,16 +169,15 @@ else:
         f1 = f1_score(y_test, y_pred)
         mcc = matthews_corrcoef(y_test, y_pred)
 
-        row1 = st.columns(3)
-        row2 = st.columns(3)
+        m1, m2, m3 = st.columns(3)
+        m4, m5, m6 = st.columns(3)
 
-        row1[0].metric("Accuracy", f"{acc:.3f}")
-        row1[1].metric("AUC", f"{auc:.3f}")
-        row1[2].metric("Precision", f"{prec:.3f}")
-
-        row2[0].metric("Recall", f"{rec:.3f}")
-        row2[1].metric("F1 Score", f"{f1:.3f}")
-        row2[2].metric("MCC", f"{mcc:.3f}")
+        m1.metric("Accuracy", f"{acc:.3f}")
+        m2.metric("AUC", f"{auc:.3f}")
+        m3.metric("Precision", f"{prec:.3f}")
+        m4.metric("Recall", f"{rec:.3f}")
+        m5.metric("F1 Score", f"{f1:.3f}")
+        m6.metric("MCC", f"{mcc:.3f}")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -206,14 +197,12 @@ else:
             cmap="Blues",
             xticklabels=["≤50K", ">50K"],
             yticklabels=["≤50K", ">50K"],
-            linewidths=0.5,
-            linecolor="#dddddd",
             ax=ax
         )
 
         ax.set_xlabel("Predicted Label")
         ax.set_ylabel("True Label")
-        ax.set_title(selected_model_display)
+        ax.set_title(f"{selected_model_display}")
 
         st.pyplot(fig)
         st.markdown('</div>', unsafe_allow_html=True)
