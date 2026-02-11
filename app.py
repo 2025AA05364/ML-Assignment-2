@@ -11,8 +11,7 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
     matthews_corrcoef,
-    confusion_matrix,
-    classification_report
+    confusion_matrix
 )
 
 # --------------------------------------------------
@@ -25,69 +24,82 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# Custom Styling (Clean Modern Look)
+# Modern Theme Styling
 # --------------------------------------------------
 st.markdown("""
-    <style>
-    .main-title {
-        font-size: 40px;
-        font-weight: 700;
-        margin-bottom: 0px;
-    }
-    .subtitle {
-        font-size: 18px;
-        color: #6c757d;
-        margin-top: 0px;
-    }
-    .student-box {
-        background-color: #f1f3f6;
-        padding: 10px 15px;
-        border-radius: 10px;
-        margin-top: 10px;
-        margin-bottom: 20px;
-    }
-    </style>
+<style>
+body {
+    background-color: #f4f6fb;
+}
+
+.header-box {
+    background: linear-gradient(135deg, #1f3c88, #3a7bd5);
+    padding: 25px;
+    border-radius: 15px;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.student-box {
+    background-color: #ffffff;
+    padding: 12px 18px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
+    margin-top: -15px;
+    margin-bottom: 20px;
+}
+
+.section-box {
+    background-color: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+}
+</style>
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# Header Section
+# Header
 # --------------------------------------------------
-st.markdown('<div class="main-title">💼 Adult Income Classification Dashboard</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Machine Learning Model Evaluation System</div>', unsafe_allow_html=True)
-
-st.markdown(
-    '<div class="student-box"><b>👤 Dinesh B M</b> | 🆔 2025AA05364</div>',
-    unsafe_allow_html=True
-)
+st.markdown("""
+<div class="header-box">
+    <h1>💼 Adult Income Classification Dashboard</h1>
+    <p>Machine Learning Model Evaluation System</p>
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown("""
-This application allows evaluation of multiple machine learning models trained
-on the **Adult Census Income dataset**.  
-Upload a raw CSV file or download a sample dataset to test the models.
-""")
-
-st.divider()
+<div class="student-box">
+    <b>👤 Dinesh B M</b> &nbsp;&nbsp; | &nbsp;&nbsp; 🆔 2025AA05364
+</div>
+""", unsafe_allow_html=True)
 
 # --------------------------------------------------
 # Sidebar
 # --------------------------------------------------
-st.sidebar.title("⚙️ Model Controls")
+st.sidebar.title("⚙️ Controls")
 
-model_name = st.sidebar.selectbox(
+# Display Names → File Mapping
+model_options = {
+    "Logistic Regression": "logistic_regression",
+    "Decision Tree Classifier": "decision_tree",
+    "K-Nearest Neighbor Classifier": "knn",
+    "Naive Bayes Classifier (Gaussian)": "naive_bayes",
+    "Ensemble Model - Random Forest": "random_forest",
+    "Ensemble Model - XGBoost": "xgboost"
+}
+
+selected_model_display = st.sidebar.selectbox(
     "Select Classification Model",
-    [
-        "Logistic Regression",
-        "Decision Tree",
-        "KNN",
-        "Naive Bayes",
-        "Random Forest",
-        "XGBoost"
-    ]
+    list(model_options.keys())
 )
+
+model_file_name = model_options[selected_model_display]
 
 st.sidebar.markdown("---")
 
-# Sample Download
+# Sample Dataset Download
 st.sidebar.subheader("📥 Sample Dataset")
 
 try:
@@ -105,10 +117,7 @@ except:
 
 st.sidebar.markdown("---")
 
-uploaded_file = st.sidebar.file_uploader(
-    "Upload Test CSV",
-    type=["csv"]
-)
+uploaded_file = st.sidebar.file_uploader("Upload Test CSV", type=["csv"])
 
 # --------------------------------------------------
 # Main Logic
@@ -118,13 +127,15 @@ if uploaded_file is None:
 else:
     data = pd.read_csv(uploaded_file)
 
+    st.markdown('<div class="section-box">', unsafe_allow_html=True)
     st.subheader("📄 Dataset Preview")
     st.dataframe(data.head(), use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if "income" not in data.columns:
         st.error("❌ CSV must contain the 'income' column.")
     else:
-        model_path = f"models/{model_name.lower().replace(' ', '_')}.pkl"
+        model_path = f"models/{model_file_name}.pkl"
         model = joblib.load(model_path)
 
         X_test = data.drop("income", axis=1)
@@ -134,10 +145,17 @@ else:
         y_prob = model.predict_proba(X_test)[:, 1]
 
         # --------------------------------------------------
-        # Metrics Section
+        # Performance Overview
         # --------------------------------------------------
-        st.divider()
-        st.subheader("📊 Performance Overview")
+        st.markdown('<div class="section-box">', unsafe_allow_html=True)
+
+        col1, col2 = st.columns([3,1])
+
+        with col1:
+            st.subheader("📊 Performance Overview")
+
+        with col2:
+            st.markdown(f"**Selected Model:** `{selected_model_display}`")
 
         acc = accuracy_score(y_test, y_pred)
         auc = roc_auc_score(y_test, y_prob)
@@ -146,42 +164,22 @@ else:
         f1 = f1_score(y_test, y_pred)
         mcc = matthews_corrcoef(y_test, y_pred)
 
-        col1, col2, col3 = st.columns(3)
-        col4, col5, col6 = st.columns(3)
+        m1, m2, m3 = st.columns(3)
+        m4, m5, m6 = st.columns(3)
 
-        col1.metric("Accuracy", f"{acc:.3f}")
-        col2.metric("AUC", f"{auc:.3f}")
-        col3.metric("Precision", f"{prec:.3f}")
-        col4.metric("Recall", f"{rec:.3f}")
-        col5.metric("F1 Score", f"{f1:.3f}")
-        col6.metric("MCC", f"{mcc:.3f}")
+        m1.metric("Accuracy", f"{acc:.3f}")
+        m2.metric("AUC", f"{auc:.3f}")
+        m3.metric("Precision", f"{prec:.3f}")
+        m4.metric("Recall", f"{rec:.3f}")
+        m5.metric("F1 Score", f"{f1:.3f}")
+        m6.metric("MCC", f"{mcc:.3f}")
 
-        # --------------------------------------------------
-        # Classification Summary
-        # --------------------------------------------------
-        st.divider()
-        st.subheader("📈 Class-wise Performance")
-
-        report = classification_report(y_test, y_pred, output_dict=True)
-
-        c1, c2 = st.columns(2)
-
-        with c1:
-            st.markdown("### ≤50K")
-            st.metric("Precision", f"{report['0']['precision']:.3f}")
-            st.metric("Recall", f"{report['0']['recall']:.3f}")
-            st.metric("F1-score", f"{report['0']['f1-score']:.3f}")
-
-        with c2:
-            st.markdown("### >50K")
-            st.metric("Precision", f"{report['1']['precision']:.3f}")
-            st.metric("Recall", f"{report['1']['recall']:.3f}")
-            st.metric("F1-score", f"{report['1']['f1-score']:.3f}")
+        st.markdown('</div>', unsafe_allow_html=True)
 
         # --------------------------------------------------
         # Confusion Matrix
         # --------------------------------------------------
-        st.divider()
+        st.markdown('<div class="section-box">', unsafe_allow_html=True)
         st.subheader("🔢 Confusion Matrix")
 
         cm = confusion_matrix(y_test, y_pred)
@@ -199,8 +197,9 @@ else:
 
         ax.set_xlabel("Predicted Label")
         ax.set_ylabel("True Label")
-        ax.set_title(f"{model_name} Confusion Matrix")
+        ax.set_title(f"{selected_model_display}")
 
         st.pyplot(fig)
+        st.markdown('</div>', unsafe_allow_html=True)
 
         st.success("✅ Evaluation Completed Successfully")
