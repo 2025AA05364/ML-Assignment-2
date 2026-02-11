@@ -25,7 +25,7 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# Modern Styling (Main Section Only)
+# Modern Styling
 # --------------------------------------------------
 st.markdown("""
 <style>
@@ -82,7 +82,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# Sidebar Controls (FROM YOUR ORIGINAL CLEAN VERSION)
+# Sidebar Controls
 # --------------------------------------------------
 st.sidebar.header("🔧 Controls")
 
@@ -102,7 +102,9 @@ model_name_display = st.sidebar.selectbox(
 
 model_file_name = model_display_options[model_name_display]
 
-# Sample Data
+# --------------------------------------------------
+# Sample Data Section
+# --------------------------------------------------
 st.sidebar.subheader("📥 Sample Data (Raw)")
 
 try:
@@ -118,16 +120,19 @@ try:
 except:
     st.sidebar.warning("Sample data not found in data/adult.csv")
 
-st.sidebar.divider()
+# --------------------------------------------------
+# Upload Section (Styled Same as Sample Data)
+# --------------------------------------------------
+st.sidebar.subheader("📤 Upload Test CSV File")
 
 uploaded_file = st.sidebar.file_uploader(
-    "Upload Test CSV File",
+    "",
     type=["csv"]
 )
 
-st.sidebar.info(
-    "📌 CSV must contain all feature columns\n"
-    "and the **income** target column."
+st.sidebar.markdown(
+    "<small>📌 CSV must contain all feature columns and the <b>income</b> target column.</small>",
+    unsafe_allow_html=True
 )
 
 # --------------------------------------------------
