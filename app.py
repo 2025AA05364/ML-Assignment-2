@@ -11,7 +11,8 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
     matthews_corrcoef,
-    confusion_matrix
+    confusion_matrix,
+    classification_report
 )
 
 # --------------------------------------------------
@@ -24,7 +25,7 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# Advanced Modern Styling
+# Modern Styling (Main Section Only)
 # --------------------------------------------------
 st.markdown("""
 <style>
@@ -32,16 +33,6 @@ st.markdown("""
 /* Main background */
 .stApp {
     background-color: #f4f7fc;
-}
-
-/* Sidebar styling */
-section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #1f3c88, #2a5298);
-    padding-top: 20px;
-}
-
-section[data-testid="stSidebar"] * {
-    color: white !important;
 }
 
 /* Header */
@@ -91,11 +82,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# Sidebar Controls
+# Sidebar Controls (FROM YOUR ORIGINAL CLEAN VERSION)
 # --------------------------------------------------
-st.sidebar.markdown("## ⚙️ Model Selection")
+st.sidebar.header("🔧 Controls")
 
-model_options = {
+model_display_options = {
     "Logistic Regression": "logistic_regression",
     "Decision Tree Classifier": "decision_tree",
     "K-Nearest Neighbor Classifier": "knn",
@@ -104,48 +95,57 @@ model_options = {
     "Ensemble Model - XGBoost": "xgboost"
 }
 
-selected_model_display = st.sidebar.selectbox(
-    "",
-    list(model_options.keys())
+model_name_display = st.sidebar.selectbox(
+    "Select Classification Model",
+    list(model_display_options.keys())
 )
 
-model_file_name = model_options[selected_model_display]
+model_file_name = model_display_options[model_name_display]
 
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 📥 Sample Dataset")
+# Sample Data
+st.sidebar.subheader("📥 Sample Data (Raw)")
 
 try:
     raw_df = pd.read_csv("data/adult.csv")
     sample_df = raw_df.sample(n=2000, random_state=42)
 
     st.sidebar.download_button(
-        label="Download Sample (2000 rows)",
+        label="⬇️ Download Sample Data (2000 rows)",
         data=sample_df.to_csv(index=False),
         file_name="adult_sample_2000.csv",
         mime="text/csv"
     )
 except:
-    st.sidebar.warning("Sample dataset not found.")
+    st.sidebar.warning("Sample data not found in data/adult.csv")
 
-st.sidebar.markdown("---")
+st.sidebar.divider()
 
-uploaded_file = st.sidebar.file_uploader("Upload Test CSV", type=["csv"])
+uploaded_file = st.sidebar.file_uploader(
+    "Upload Test CSV File",
+    type=["csv"]
+)
+
+st.sidebar.info(
+    "📌 CSV must contain all feature columns\n"
+    "and the **income** target column."
+)
 
 # --------------------------------------------------
 # Main Logic
 # --------------------------------------------------
 if uploaded_file is None:
-    st.info("⬅️ Upload a dataset from the sidebar to begin evaluation.")
+    st.warning("⬅️ Upload a CSV file or download sample data to continue.")
 else:
     data = pd.read_csv(uploaded_file)
 
+    # Dataset Preview
     st.markdown('<div class="section-box">', unsafe_allow_html=True)
     st.subheader("📄 Dataset Preview")
     st.dataframe(data.head(), use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     if "income" not in data.columns:
-        st.error("❌ CSV must contain the 'income' column.")
+        st.error("❌ Uploaded CSV must contain the 'income' column.")
     else:
         model_path = f"models/{model_file_name}.pkl"
         model = joblib.load(model_path)
@@ -160,7 +160,7 @@ else:
         # Performance Overview (INLINE MODEL NAME)
         # --------------------------------------------------
         st.markdown('<div class="section-box">', unsafe_allow_html=True)
-        st.subheader(f"📊 Performance Overview : {selected_model_display}")
+        st.subheader(f"📊 Performance Overview : {model_name_display}")
 
         acc = accuracy_score(y_test, y_pred)
         auc = roc_auc_score(y_test, y_prob)
@@ -169,15 +169,40 @@ else:
         f1 = f1_score(y_test, y_pred)
         mcc = matthews_corrcoef(y_test, y_pred)
 
-        m1, m2, m3 = st.columns(3)
-        m4, m5, m6 = st.columns(3)
+        row1 = st.columns(3)
+        row2 = st.columns(3)
 
-        m1.metric("Accuracy", f"{acc:.3f}")
-        m2.metric("AUC", f"{auc:.3f}")
-        m3.metric("Precision", f"{prec:.3f}")
-        m4.metric("Recall", f"{rec:.3f}")
-        m5.metric("F1 Score", f"{f1:.3f}")
-        m6.metric("MCC", f"{mcc:.3f}")
+        row1[0].metric("Accuracy", f"{acc:.3f}")
+        row1[1].metric("AUC", f"{auc:.3f}")
+        row1[2].metric("Precision", f"{prec:.3f}")
+
+        row2[0].metric("Recall", f"{rec:.3f}")
+        row2[1].metric("F1 Score", f"{f1:.3f}")
+        row2[2].metric("MCC", f"{mcc:.3f}")
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        # --------------------------------------------------
+        # Classification Summary
+        # --------------------------------------------------
+        st.markdown('<div class="section-box">', unsafe_allow_html=True)
+        st.subheader("📈 Classification Summary")
+
+        report = classification_report(y_test, y_pred, output_dict=True)
+
+        col_a, col_b = st.columns(2)
+
+        with col_a:
+            st.markdown("### ≤50K Class")
+            st.metric("Precision", f"{report['0']['precision']:.3f}")
+            st.metric("Recall", f"{report['0']['recall']:.3f}")
+            st.metric("F1-score", f"{report['0']['f1-score']:.3f}")
+
+        with col_b:
+            st.markdown("### >50K Class")
+            st.metric("Precision", f"{report['1']['precision']:.3f}")
+            st.metric("Recall", f"{report['1']['recall']:.3f}")
+            st.metric("F1-score", f"{report['1']['f1-score']:.3f}")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -202,9 +227,9 @@ else:
 
         ax.set_xlabel("Predicted Label")
         ax.set_ylabel("True Label")
-        ax.set_title(f"{selected_model_display}")
+        ax.set_title(model_name_display)
 
         st.pyplot(fig)
         st.markdown('</div>', unsafe_allow_html=True)
 
-        st.success("✅ Evaluation Completed Successfully")
+        st.success("✅ Evaluation completed successfully!")
