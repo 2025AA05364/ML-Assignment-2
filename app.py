@@ -24,43 +24,66 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# Modern Theme Styling
+# Premium Styling
 # --------------------------------------------------
 st.markdown("""
 <style>
-body {
-    background-color: #f4f6fb;
+
+/* App background */
+.stApp {
+    background-color: #eef2f8;
 }
 
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
+    padding-top: 30px;
+}
+
+section[data-testid="stSidebar"] * {
+    color: white !important;
+}
+
+/* Header */
 .header-box {
-    background: linear-gradient(135deg, #1f3c88, #3a7bd5);
-    padding: 25px;
-    border-radius: 15px;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    padding: 35px;
+    border-radius: 20px;
     color: white;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
+/* Student Info */
 .student-box {
-    background-color: #ffffff;
-    padding: 12px 18px;
-    border-radius: 12px;
-    box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
-    margin-top: -15px;
-    margin-bottom: 20px;
+    background: white;
+    padding: 18px 25px;
+    border-radius: 15px;
+    box-shadow: 0px 8px 20px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
 }
 
+/* Content cards */
 .section-box {
-    background-color: white;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0px 4px 12px rgba(0,0,0,0.06);
-    margin-bottom: 20px;
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0px 8px 20px rgba(0,0,0,0.06);
+    margin-bottom: 30px;
 }
+
+/* Metric spacing */
+[data-testid="metric-container"] {
+    background-color: #f8faff;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.05);
+}
+
 </style>
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# Header
+# Header Section
 # --------------------------------------------------
 st.markdown("""
 <div class="header-box">
@@ -71,16 +94,15 @@ st.markdown("""
 
 st.markdown("""
 <div class="student-box">
-    <b>👤 Dinesh B M</b> &nbsp;&nbsp; | &nbsp;&nbsp; 🆔 2025AA05364
+    <b>👤 Dinesh B M</b> &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp; 🆔 2025AA05364
 </div>
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# Sidebar
+# Sidebar Controls
 # --------------------------------------------------
-st.sidebar.title("⚙️ Controls")
+st.sidebar.markdown("## 🔎 Select Model")
 
-# Display Names → File Mapping
 model_options = {
     "Logistic Regression": "logistic_regression",
     "Decision Tree Classifier": "decision_tree",
@@ -91,26 +113,24 @@ model_options = {
 }
 
 selected_model_display = st.sidebar.selectbox(
-    "Select Classification Model",
+    "",
     list(model_options.keys())
 )
 
 model_file_name = model_options[selected_model_display]
 
 st.sidebar.markdown("---")
-
-# Sample Dataset Download
-st.sidebar.subheader("📥 Sample Dataset")
+st.sidebar.markdown("### 📥 Sample Dataset")
 
 try:
     raw_df = pd.read_csv("data/adult.csv")
     sample_df = raw_df.sample(n=2000, random_state=42)
 
     st.sidebar.download_button(
-        label="Download Sample (2000 rows)",
-        data=sample_df.to_csv(index=False),
-        file_name="adult_sample_2000.csv",
-        mime="text/csv"
+        "Download Sample (2000 rows)",
+        sample_df.to_csv(index=False),
+        "adult_sample_2000.csv",
+        "text/csv"
     )
 except:
     st.sidebar.warning("Sample dataset not found.")
@@ -148,14 +168,7 @@ else:
         # Performance Overview
         # --------------------------------------------------
         st.markdown('<div class="section-box">', unsafe_allow_html=True)
-
-        col1, col2 = st.columns([3,1])
-
-        with col1:
-            st.subheader("📊 Performance Overview")
-
-        with col2:
-            st.markdown(f"**Selected Model:** `{selected_model_display}`")
+        st.subheader(f"📊 Performance Overview : {selected_model_display}")
 
         acc = accuracy_score(y_test, y_pred)
         auc = roc_auc_score(y_test, y_prob)
@@ -164,15 +177,16 @@ else:
         f1 = f1_score(y_test, y_pred)
         mcc = matthews_corrcoef(y_test, y_pred)
 
-        m1, m2, m3 = st.columns(3)
-        m4, m5, m6 = st.columns(3)
+        row1 = st.columns(3)
+        row2 = st.columns(3)
 
-        m1.metric("Accuracy", f"{acc:.3f}")
-        m2.metric("AUC", f"{auc:.3f}")
-        m3.metric("Precision", f"{prec:.3f}")
-        m4.metric("Recall", f"{rec:.3f}")
-        m5.metric("F1 Score", f"{f1:.3f}")
-        m6.metric("MCC", f"{mcc:.3f}")
+        row1[0].metric("Accuracy", f"{acc:.3f}")
+        row1[1].metric("AUC", f"{auc:.3f}")
+        row1[2].metric("Precision", f"{prec:.3f}")
+
+        row2[0].metric("Recall", f"{rec:.3f}")
+        row2[1].metric("F1 Score", f"{f1:.3f}")
+        row2[2].metric("MCC", f"{mcc:.3f}")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -192,12 +206,14 @@ else:
             cmap="Blues",
             xticklabels=["≤50K", ">50K"],
             yticklabels=["≤50K", ">50K"],
+            linewidths=0.5,
+            linecolor="gray",
             ax=ax
         )
 
         ax.set_xlabel("Predicted Label")
         ax.set_ylabel("True Label")
-        ax.set_title(f"{selected_model_display}")
+        ax.set_title(selected_model_display)
 
         st.pyplot(fig)
         st.markdown('</div>', unsafe_allow_html=True)
