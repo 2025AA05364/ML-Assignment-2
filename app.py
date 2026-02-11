@@ -15,7 +15,7 @@ from sklearn.metrics import (
 )
 
 # --------------------------------------------------
-# Page Configuration
+# Page Config
 # --------------------------------------------------
 st.set_page_config(
     page_title="Adult Income Classification",
@@ -24,19 +24,19 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# Premium Styling
+# Elegant Blue Professional Theme
 # --------------------------------------------------
 st.markdown("""
 <style>
 
-/* App background */
+/* App Background */
 .stApp {
-    background-color: #eef2f8;
+    background-color: #f2f5fa;
 }
 
-/* Sidebar */
+/* Sidebar - Soft Blue Gradient */
 section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
+    background: linear-gradient(180deg, #2b5876, #4e4376);
     padding-top: 30px;
 }
 
@@ -46,44 +46,44 @@ section[data-testid="stSidebar"] * {
 
 /* Header */
 .header-box {
-    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    background: linear-gradient(135deg, #396afc, #2948ff);
     padding: 35px;
     border-radius: 20px;
     color: white;
     margin-bottom: 25px;
 }
 
-/* Student Info */
+/* Student Info Card */
 .student-box {
     background: white;
     padding: 18px 25px;
     border-radius: 15px;
-    box-shadow: 0px 8px 20px rgba(0,0,0,0.08);
+    box-shadow: 0px 6px 18px rgba(0,0,0,0.08);
     margin-bottom: 30px;
 }
 
-/* Content cards */
+/* Content Cards */
 .section-box {
     background: white;
     padding: 30px;
     border-radius: 20px;
-    box-shadow: 0px 8px 20px rgba(0,0,0,0.06);
+    box-shadow: 0px 6px 18px rgba(0,0,0,0.06);
     margin-bottom: 30px;
 }
 
-/* Metric spacing */
+/* Metric Styling */
 [data-testid="metric-container"] {
-    background-color: #f8faff;
+    background-color: #f7f9fc;
     border-radius: 12px;
     padding: 15px;
-    box-shadow: 0px 4px 10px rgba(0,0,0,0.05);
+    box-shadow: 0px 3px 8px rgba(0,0,0,0.05);
 }
 
 </style>
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# Header Section
+# Header
 # --------------------------------------------------
 st.markdown("""
 <div class="header-box">
@@ -94,12 +94,12 @@ st.markdown("""
 
 st.markdown("""
 <div class="student-box">
-    <b>👤 Dinesh B M</b> &nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp; 🆔 2025AA05364
+    <b>👤 Dinesh B M</b> &nbsp;&nbsp; | &nbsp;&nbsp; 🆔 2025AA05364
 </div>
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# Sidebar Controls
+# Sidebar
 # --------------------------------------------------
 st.sidebar.markdown("## 🔎 Select Model")
 
@@ -207,7 +207,7 @@ else:
             xticklabels=["≤50K", ">50K"],
             yticklabels=["≤50K", ">50K"],
             linewidths=0.5,
-            linecolor="gray",
+            linecolor="#dddddd",
             ax=ax
         )
 
